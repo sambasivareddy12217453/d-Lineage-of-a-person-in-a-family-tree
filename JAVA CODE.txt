@@ -1,0 +1,145 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+class FamilyMember {
+    public String name;
+    public boolean isMale;
+    public FamilyMember parent;
+    public List<FamilyMember> children;
+
+    public FamilyMember(String name, boolean isMale) {
+        this.name = name;
+        this.isMale = isMale;
+        this.children = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isMale() {
+        return isMale;
+    }
+
+    public FamilyMember getParent() {
+        return parent;
+    }
+
+    public List<FamilyMember> getChildren() {
+        return children;
+    }
+
+    public void setParent(FamilyMember parent) {
+        this.parent = parent;
+    }
+
+    public void addChild(FamilyMember child) {
+        children.add(child);
+        child.setParent(this);
+    }
+}
+
+public class FamilyTreeApp {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Map<String, FamilyMember> familyTree = new HashMap<>();
+
+        System.out.println("Welcome to the Family Tree Application!");
+
+        while (true) {
+            System.out.println("\nOptions:");
+            System.out.println("1. Add a family member");
+            System.out.println("2. Print family tree");
+            System.out.println("3. Find ancestral lineage");
+            System.out.println("4. Exit");
+            System.out.print("Select an option: ");
+
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline character
+
+            switch (option) {
+                case 1: {
+                    addFamilyMember(familyTree, scanner);
+                    break;
+                }
+                case 2: {
+                    // Call the printFamilyTree method with the root family member and level 0
+                    FamilyMember root = familyTree.get("Root"); // Replace "Root" with the actual root name
+                    if (root != null) {
+                        printFamilyTree(root, 0);
+                    } else {
+                        System.out.println("Family tree is empty. Add a family member first.");
+                    }
+                    break;
+                }
+                case 3: {
+                    findAncestralLineage(familyTree, scanner);
+                    break;
+                }
+                case 4: {
+                    System.out.println("Goodbye!");
+                    return;
+                }
+                default: {
+                    System.out.println("Invalid option. Please try again.");
+                }
+            }
+        }
+    }
+
+    private static void addFamilyMember(Map<String, FamilyMember> familyTree, Scanner scanner) {
+        System.out.print("Enter the name of the family member: ");
+        String name = scanner.nextLine();
+        System.out.print("Is this person male? (true/false): ");
+        boolean isMale = scanner.nextBoolean();
+
+        FamilyMember newMember = new FamilyMember(name, isMale);
+
+        System.out.print("Is this person a child of someone in the family tree? (y/n): ");
+        String isChild = scanner.next();
+        if (isChild.equalsIgnoreCase("y")) {
+            System.out.print("Enter the name of the parent: ");
+            String parentName = scanner.next();
+            FamilyMember parent = familyTree.get(parentName);
+            if (parent != null) {
+                parent.addChild(newMember);
+            } else {
+                System.out.println("Parent not found in the family tree.");
+            }
+        } else {
+            familyTree.put(name, newMember);
+        }
+    }
+
+    private static void printFamilyTree(FamilyMember member, int level) {
+        System.out.println(" ".repeat(level) + member.getName());
+        for (FamilyMember child : member.getChildren()) {
+            printFamilyTree(child, level + 1);
+        }
+    }
+
+    private static void findAncestralLineage(Map<String, FamilyMember> familyTree, Scanner scanner) {
+        System.out.print("Enter the name of the person to find ancestral lineage: ");
+        String personName = scanner.next();
+        FamilyMember person = familyTree.get(personName);
+        if (person != null) {
+            List<FamilyMember> ancestors = new ArrayList<>();
+            FamilyMember currentAncestor = person;
+            while (currentAncestor != null) {
+                ancestors.add(currentAncestor);
+                currentAncestor = currentAncestor.getParent();
+            }
+
+            System.out.println("Ancestral lineage for " + personName + ":");
+            for (int i = ancestors.size() - 1; i >= 0; i--) {
+                FamilyMember ancestor = ancestors.get(i);
+                System.out.println(ancestor.getName() + " (Male: " + ancestor.isMale() + ")");
+            }
+        } else {
+            System.out.println("Person not found in the family tree.");
+        }
+    }
+}
